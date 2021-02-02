@@ -24,7 +24,7 @@ library(e1071)
 library(pROC)
 
 # Set de data
-train <- read_csv("Data/train.csv", col_types = cols(id = col_number(), 
+trainInsure <- read_csv("Data/train.csv", col_types = cols(id = col_number(), 
                                                    Age = col_number(), 
                                                    Driving_License = col_number(), 
                                                    Region_Code = col_number(), 
@@ -36,44 +36,44 @@ train <- read_csv("Data/train.csv", col_types = cols(id = col_number(),
                                                    )
                  )
 # Ver informacion
-View(train)
+View(trainInsure)
 
 # Explorando un par de datos
-head(train)
-summary(train)
+head(trainInsure)
+summary(trainInsure)
 
 # Exploremos un poco cada variable para encontrar nulls/nas
-table(train$id)
-table(train$Gender)
-table(train$Age)
-table(train$Driving_License)
-table(train$Region_Code)
-table(train$Previously_Insured)
-table(train$Vehicle_Age)
-table(train$Vehicle_Damage)
-table(train$Annual_Premium)
-table(train$Policy_Sales_Channel)
-table(train$Vintage)
-table(train$Response)
+table(trainInsure$id)
+table(trainInsure$Gender)
+table(trainInsure$Age)
+table(trainInsure$Driving_License)
+table(trainInsure$Region_Code)
+table(trainInsure$Previously_Insured)
+table(trainInsure$Vehicle_Age)
+table(trainInsure$Vehicle_Damage)
+table(trainInsure$Annual_Premium)
+table(trainInsure$Policy_Sales_Channel)
+table(trainInsure$Vintage)
+table(trainInsure$Response)
 
 # Estamos libres de pecado, amen /\
-for (i in train) {
-  View(train[is.na(i),])
+for (i in trainInsure) {
+  View(trainInsure[is.na(i),])
 }
 
 #Preparando para la matrix de correlacion
 
-train$GenderDummy =  ifelse(train$Gender == "Male", 1 , 0)
+trainInsure$GenderDummy =  ifelse(trainInsure$Gender == "Male", 1 , 0)
 
 #   < 1 Year    0
 #   1-2 Year    1 
 #   > 2 Years   2
-train$Vehicle_AgeDummy =  ifelse (train$Vehicle_Age == "< 1 Year",0, ifelse(train$Vehicle_Age == "> 2 Years", 2 , 1))
+trainInsure$Vehicle_AgeDummy =  ifelse (trainInsure$Vehicle_Age == "< 1 Year",0, ifelse(trainInsure$Vehicle_Age == "> 2 Years", 2 , 1))
 
-train$VehiculeDamage_Dummy =  ifelse(train$Vehicle_Damage == "Yes", 1 , 0)
+trainInsure$VehiculeDamage_Dummy =  ifelse(trainInsure$Vehicle_Damage == "Yes", 1 , 0)
 
-# Subset train
-trainSinCategorico = train %>% select(
+# Subset trainInsure
+trainSinCategorico = trainInsure %>% select(
   - id,
   - Gender,
   - Vehicle_Age,
@@ -88,16 +88,16 @@ rm(matriz_cor)
 rm(trainSinCategorico)
 
 # Preparamos el set
-train$Gender <- as.factor(train$Gender)
-train$Vehicle_Age <- as.factor(train$Vehicle_Age)
-train$Vehicle_Damage <- as.factor(train$Vehicle_Damage)
-train$Previously_Insured<- as.factor(train$Previously_Insured)
-# train$Response <- as.factor(train$Response)
-train$Region_Code <- as.factor(train$Region_Code)
-train$Driving_License <- as.factor(train$Driving_License)
+trainInsure$Gender <- as.factor(trainInsure$Gender)
+trainInsure$Vehicle_Age <- as.factor(trainInsure$Vehicle_Age)
+trainInsure$Vehicle_Damage <- as.factor(trainInsure$Vehicle_Damage)
+trainInsure$Previously_Insured<- as.factor(trainInsure$Previously_Insured)
+# trainInsure$Response <- as.factor(trainInsure$Response)
+trainInsure$Region_Code <- as.factor(trainInsure$Region_Code)
+trainInsure$Driving_License <- as.factor(trainInsure$Driving_License)
 
 # Como se divide el valor de Response
-table(train$Response)
+table(trainInsure$Response)
 # Respuesta positiva
 (46710/(334399+46710)) * 100
 # Respuesta negativa
@@ -105,11 +105,11 @@ table(train$Response)
 
 # Revisamos todas las variables
 variables <- c(
-  train[2],
-  train[4],
-  train[6],
-  train[7],
-  train[8]
+  trainInsure[2],
+  trainInsure[4],
+  trainInsure[6],
+  trainInsure[7],
+  trainInsure[8]
   )
 
 # Revisamos categoricas
@@ -118,28 +118,28 @@ varPos <- c(2,4,6,7,8)
 for (i in variables) {
   mosaicplot(
     Response ~ i,
-    data = train,
-    ylab = names(train)[varPos[varNameCount]],
-    color = train$Response,
+    data = trainInsure,
+    ylab = names(trainInsure)[varPos[varNameCount]],
+    color = trainInsure$Response,
     shade = TRUE
   )
   varNameCount <- varNameCount + 1
 }
 
 # Revisamos variables cuantitativas
-train %>% 
+trainInsure %>% 
   ggplot() +
   aes(x = Gender, y = Age, color = Response) +
   geom_boxplot() +
   ggtitle("Por Genero y Edad")
 
-train %>% 
+trainInsure %>% 
   ggplot() +
   aes(x = Age, y = Annual_Premium, color = Response) +
   geom_histogram(stat='identity') +
   ggtitle("Por Edad y Monto acumulado de poliza")
 
-train %>% 
+trainInsure %>% 
   ggplot() +
   aes(x = Previously_Insured, y = as.numeric(Response), color = Response) +
   geom_bar(stat='identity') +
@@ -149,7 +149,7 @@ train %>%
 
 # Tablas de contingencia
 # Contingencia de genero
-genderTable <- table(train$Gender, train$Response)
+genderTable <- table(trainInsure$Gender, trainInsure$Response)
 genderTable
 
 rowSums(genderTable)
@@ -158,7 +158,7 @@ colSums(genderTable)
 rm(genderTable)
 
 # Contingencia por edad del vehiculo
-vehicleAgeTable <- table(train$Vehicle_Age, train$Response)
+vehicleAgeTable <- table(trainInsure$Vehicle_Age, trainInsure$Response)
 vehicleAgeTable
 
 rowSums(vehicleAgeTable)
@@ -167,7 +167,7 @@ colSums(vehicleAgeTable)
 rm(vehicleAgeTable)
 
 # Contingencia por danio previo al vehiculo
-vehicleDamageTable <- table(train$Vehicle_Damage, train$Response)
+vehicleDamageTable <- table(trainInsure$Vehicle_Damage, trainInsure$Response)
 vehicleDamageTable
 
 rowSums(vehicleDamageTable)
@@ -176,7 +176,7 @@ colSums(vehicleDamageTable)
 rm(vehicleDamageTable)
 
 # Contingencia por canal de comunicacion
-channelTable <- table(train$Policy_Sales_Channel, train$Response)
+channelTable <- table(trainInsure$Policy_Sales_Channel, trainInsure$Response)
 channelTable <- cbind(channelTable, (((channelTable[,1] - channelTable[,2])/ (channelTable[,1] + channelTable[,2])) - 1) * -100)
 channelTable
 
@@ -186,7 +186,7 @@ colSums(channelTable)
 rm(channelTable)
 
 # Contingencia por previo asegurado
-prevEnsureTable <- table(train$Previously_Insured, train$Response)
+prevEnsureTable <- table(trainInsure$Previously_Insured, trainInsure$Response)
 prevEnsureTable
 
 rowSums(prevEnsureTable)
@@ -195,7 +195,7 @@ colSums(prevEnsureTable)
 rm(prevEnsureTable)
 
 # Contingencia por previo asegurado
-ageTable <- table(train$Age, train$Response)
+ageTable <- table(trainInsure$Age, trainInsure$Response)
 ageTable <- cbind(ageTable, (((ageTable[,1] - ageTable[,2])/ (ageTable[,1] + ageTable[,2])) - 1) * -100)
 ageTable
 
@@ -203,3 +203,122 @@ rowSums(ageTable)
 colSums(ageTable)
 
 rm(ageTable)
+
+# Hipopotamo
+# Las variables de Age, Previoulsy Ensured, Sale Channel, Vehicle Age, Vehicle Damage
+# y Gender tienen una relacion que explica la variable Response
+
+# Generamos nuestro subset para trainInsure y test
+# Filas para trainInsure y test (utilizando paquete de CARET)
+inTrain <- createDataPartition(y = trainInsure$Response, p = 0.7, list = FALSE)
+test <- trainInsure[-inTrain,]
+train <- trainInsure[inTrain,]
+
+rm(trainInsure)
+rm(inTrain)
+rm(variables)
+rm(i)
+rm(varNameCount)
+rm(varPos)
+
+# Naive Bayes
+# Hip 1
+modeloBayes <- naiveBayes(Response ~ ., data = train)
+predNB_Test_1<-predict(modeloBayes, newdata=test, type="raw")
+
+predictionNB_Test_1 <- as.data.frame(predNB_Test_1)
+predictionNB_Test_1$Result <- ifelse(predictionNB_Test_1[,1]>predictionNB_Test_1[,2],0,1)
+predictionNB_Test_1$ResultChar = ifelse(predictionNB_Test_1$Result==1,"SI","NO")
+resultsNB_Test_1 <- table(test$Response, predictionNB_Test_1$ResultChar)
+resultsNB_Test_1
+
+# Acurracy
+accuracyNB_Test_1 <- sum(diag(resultsNB_Test_1))/sum(resultsNB_Test_1)
+accuracyNB_Test_1
+
+# Recall
+# TP/(TP+FN)
+recall_Test_1 <- (resultsNB_Test_1[2,2]/(resultsNB_Test_1[2,1]+resultsNB_Test_1[2,2]))
+recall_Test_1
+
+# Precision
+# TP/(TP+FP)
+precision_Test_1 <- (resultsNB_Test_1[2,2]/(resultsNB_Test_1[1,2]+resultsNB_Test_1[2,2]))
+precision_Test_1
+
+# Clean Memory
+rm(modeloBayes)
+rm(predictionNB_Test_1)
+rm(predNB_Test_1)
+
+# Hip 2
+modeloBayes2 <- naiveBayes(Response ~ Age + Gender + Previously_Insured +
+                             Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
+                           method="class", 
+                           data=train
+                           )
+
+predNB_Test_2 <- predict(modeloBayes2, newdata=test, type="raw")
+
+predictionNB_Test_2 <- as.data.frame(predNB_Test_2)
+predictionNB_Test_2$Result <- ifelse(predictionNB_Test_2[,1]>predictionNB_Test_2[,2],0,1)
+predictionNB_Test_2$ResultChar = ifelse(predictionNB_Test_2$Result==1,"SI","NO")
+resultsNB_Test_2 <- table(test$Response, predictionNB_Test_2$ResultChar)
+resultsNB_Test_2
+
+# Acurracy
+accuracyNB_Test_2 <- sum(diag(resultsNB_Test_2))/sum(resultsNB_Test_2)
+accuracyNB_Test_2
+
+# Recall
+#TP/(TP+FN)
+recall_Test_2<-(resultsNB_Test_2[2,2]/(resultsNB_Test_2[2,1]+resultsNB_Test_2[2,2]))
+recall_Test_2
+
+# Precision
+#TP/(TP+FP)
+precision_Test_2<-(resultsNB_Test_2[2,2]/(resultsNB_Test_2[1,2]+resultsNB_Test_2[2,2]))
+precision_Test_2
+
+# Clean Memory
+rm(modeloBayes2)
+rm(predictionNB_Test_2)
+rm(predNB_Test_2)
+
+# Decision Tree
+
+# Random Forest
+
+# Logic Regression
+
+
+#Tabla de comparacion Accuracy, Recall y Precision
+
+modelo = c(
+  "Modelo NB 1", 
+  "Modelo NB 2", 
+  "Modelo DT 1", 
+  "Modelo DT 2", 
+  "Modelo RF 1", 
+  "Modelo RF 2", 
+  "Modelo LR 1", 
+  "Modelo LR 2"
+  )
+accuracy = c(
+  accuracyNB_Test_1,
+  accuracyNB_Test_2
+)
+
+precision = c(
+  precision_Test_1,
+  precision_Test_2
+)
+
+recall = c(
+  recall_Test_1,
+  recall_Test_2
+)
+
+resumen = data.frame(modelo, accuracy, precision, recall)
+
+resumen
