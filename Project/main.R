@@ -61,12 +61,39 @@ for (i in train) {
   View(train[is.na(i),])
 }
 
+#Preparando para la matrix de correlacion
+
+train$GenderDummy =  ifelse(train$Gender == "Male", 1 , 0)
+
+table(train$Vehicle_Age)
+
+#   < 1 Year    0
+#   1-2 Year    1 
+#   > 2 Years   2
+train$Vehicle_AgeDummy =  ifelse (train$Vehicle_Age == "< 1 Year",0, ifelse(train$Vehicle_Age == "> 2 Years", 2 , 1))
+
+train$VehiculeDamage_Dummy =  ifelse(train$Vehicle_Damage == "Yes", 1 , 0)
+
+# Subset train
+trainCategorico = train %>% select(
+  - id,
+  - Gender,
+  - Vehicle_Age,
+  - Vehicle_Damage
+)
+
+# Matriz
+matriz_cor = cor(trainCategorico)
+corrplot(matriz_cor)
+
 # Preparamos el set
 train$Gender <- as.factor(train$Gender)
 train$Vehicle_Age <- as.factor(train$Vehicle_Age)
 train$Vehicle_Damage <- as.factor(train$Vehicle_Damage)
 train$Previously_Insured<- as.factor(train$Previously_Insured)
-train$Response <- as.factor(train$Response)
+# train$Response <- as.factor(train$Response)
+train$Region_Code <- as.factor(train$Region_Code)
+train$Driving_License <- as.factor(train$Driving_License)
 
 # Como se divide el valor de Response
 table(train$Response)
@@ -110,3 +137,19 @@ train %>%
   aes(x = Age, y = Annual_Premium, color = Response) +
   geom_histogram(stat='identity') +
   ggtitle("Por Edad y Monto acumulado de poliza")
+
+train %>% 
+  ggplot() +
+  aes(x = Previously_Insured, y = as.numeric(Response), color = Response) +
+  geom_bar(stat='identity') +
+  ggtitle("Previamente asegurados acumulado por respuesta") +
+  scale_y_continuous(breaks = seq(0, 300000, 50000), 
+                     limits=c(0, 300000))
+
+trainGender <- train %>%
+  select(Gender, Response) %>%
+  group_by(Gender) %>%
+  summarise(suma = sum(Response))
+
+trainGender
+rm(trainGender)
