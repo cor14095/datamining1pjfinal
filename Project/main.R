@@ -65,8 +65,6 @@ for (i in train) {
 
 train$GenderDummy =  ifelse(train$Gender == "Male", 1 , 0)
 
-table(train$Vehicle_Age)
-
 #   < 1 Year    0
 #   1-2 Year    1 
 #   > 2 Years   2
@@ -75,7 +73,7 @@ train$Vehicle_AgeDummy =  ifelse (train$Vehicle_Age == "< 1 Year",0, ifelse(trai
 train$VehiculeDamage_Dummy =  ifelse(train$Vehicle_Damage == "Yes", 1 , 0)
 
 # Subset train
-trainCategorico = train %>% select(
+trainSinCategorico = train %>% select(
   - id,
   - Gender,
   - Vehicle_Age,
@@ -83,8 +81,11 @@ trainCategorico = train %>% select(
 )
 
 # Matriz
-matriz_cor = cor(trainCategorico)
+matriz_cor = cor(trainSinCategorico)
 corrplot(matriz_cor)
+
+rm(matriz_cor)
+rm(trainSinCategorico)
 
 # Preparamos el set
 train$Gender <- as.factor(train$Gender)
@@ -146,10 +147,21 @@ train %>%
   scale_y_continuous(breaks = seq(0, 300000, 50000), 
                      limits=c(0, 300000))
 
-trainGender <- train %>%
-  select(Gender, Response) %>%
-  group_by(Gender) %>%
-  summarise(suma = sum(Response))
+# Tablas de contingencia
+# Contingencia de genero
+genderTable <- table(train$Gender, train$Response)
+genderTable
 
-trainGender
-rm(trainGender)
+rowSums(genderTable)
+colSums(genderTable)
+
+rm(genderTable)
+
+# Contingencia de genero
+genderTable <- table(train$Gender, train$Response)
+genderTable
+
+rowSums(genderTable)
+colSums(genderTable)
+
+rm(genderTable)
