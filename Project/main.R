@@ -157,11 +157,49 @@ colSums(genderTable)
 
 rm(genderTable)
 
-# Contingencia de genero
-genderTable <- table(train$Gender, train$Response)
-genderTable
+# Contingencia por edad del vehiculo
+vehicleAgeTable <- table(train$Vehicle_Age, train$Response)
+vehicleAgeTable
 
-rowSums(genderTable)
-colSums(genderTable)
+rowSums(vehicleAgeTable)
+colSums(vehicleAgeTable)
 
-rm(genderTable)
+rm(vehicleAgeTable)
+
+# Contingencia por danio previo al vehiculo
+vehicleDamageTable <- table(train$Vehicle_Damage, train$Response)
+vehicleDamageTable
+
+rowSums(vehicleDamageTable)
+colSums(vehicleDamageTable)
+
+rm(vehicleDamageTable)
+
+# Contingencia por canal de comunicacion
+channelTable <- table(train$Policy_Sales_Channel, train$Response)
+channelTable <- cbind(channelTable, (((channelTable[,1] - channelTable[,2])/ (channelTable[,1] + channelTable[,2])) - 1) * -100)
+channelTable
+
+rowSums(channelTable)
+colSums(channelTable)
+
+rm(channelTable)
+
+# Contingencia por previo asegurado
+prevEnsureTable <- table(train$Previously_Insured, train$Response)
+prevEnsureTable
+
+rowSums(prevEnsureTable)
+colSums(prevEnsureTable)
+
+rm(prevEnsureTable)
+
+# Contingencia por previo asegurado
+ageTable <- table(train$Age, train$Response)
+ageTable <- cbind(ageTable, (((ageTable[,1] - ageTable[,2])/ (ageTable[,1] + ageTable[,2])) - 1) * -100)
+ageTable
+
+rowSums(ageTable)
+colSums(ageTable)
+
+rm(ageTable)
