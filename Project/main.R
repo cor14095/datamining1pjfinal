@@ -23,6 +23,8 @@ library(weights)
 library(e1071)
 library(pROC)
 
+library(randomForest)
+
 # Set de data
 trainInsure <- read_csv("Data/train.csv", col_types = cols(id = col_number(), 
                                                    Age = col_number(), 
@@ -357,12 +359,26 @@ rm(resultsDT_Test_2)
 # -----------------------------------------------------------------------------
 
 # --------------------------------- Hip 1 -------------------------------------
+modeloRF <- randomForest(Response ~ ., data=train, importance = F, type = "class")
+modeloRF
+
+predictionRF_Test_1 <- predict(modeloRF, newdata = test, type = "class")
+predictionRF_Test_1 = ifelse(predictionRF_Test_1 > 0.5, "SI", "NO")
+resultsRF_Test_1<-table(test$Response, predictionRF_Test_1)
+resultsRF_Test_1
+prop.table(resultsRF_Test_1)
 
 # Acurracy
+accuracyRF_Test_5<-sum(diag(resultsRF_Test_1))/sum(resultsRF_Test_1)
+accuracyRF_Test_5
 
 # Recall
+recall_Test_5<-(resultsRF_Test_1[2,2]/(resultsRF_Test_1[2,1]+resultsRF_Test_1[2,2]))
+recall_Test_5
 
 # Precision
+precision_Test_5<-(resultsRF_Test_1[2,2]/(resultsRF_Test_1[1,2]+resultsRF_Test_1[2,2]))
+precision_Test_5
 
 # Clean Memory
 rm(modeloRF)
@@ -371,12 +387,26 @@ rm(resultsRF_Test_1)
 # -------------------------------- Fin Hip 1 ----------------------------------
 
 # --------------------------------- Hip 2 -------------------------------------
+modeloRF2 <- randomForest(Response ~ ., data=train, importance = F, type = "class")
+modeloRF2
+
+predictionRF_Test_2 <- predict(modeloRF2, newdata = test, type = "class")
+predictionRF_Test_2 = ifelse(predictionRF_Test_2 > 0.5, "SI", "NO")
+resultsRF_Test_2<-table(test$Response, predictionRF_Test_2)
+resultsRF_Test_2
+prop.table(resultsRF_Test_2)
 
 # Acurracy
+accuracyRF_Test_6<-sum(diag(resultsRF_Test_2))/sum(resultsRF_Test_2)
+accuracyRF_Test_6
 
 # Recall
+recall_Test_6<-(resultsRF_Test_2[2,2]/(resultsRF_Test_2[2,1]+resultsRF_Test_2[2,2]))
+recall_Test_6
 
 # Precision
+precision_Test_6<-(resultsRF_Test_2[2,2]/(resultsRF_Test_2[1,2]+resultsRF_Test_2[2,2]))
+precision_Test_6
 
 # Clean Memory
 rm(modeloRF2)
@@ -433,21 +463,33 @@ accuracy = c(
   accuracyNB_Test_1,
   accuracyNB_Test_2,
   accuracyDT_Test_3,
-  accuracyDT_Test_4
+  accuracyDT_Test_4,
+  accuracyRF_Test_5,
+  accuracyRF_Test_6,
+  accuracyLR_Test_7,
+  accuracyLR_Test_8
 )
 
 precision = c(
   precision_Test_1,
   precision_Test_2,
   precision_Test_3,
-  precision_Test_4
+  precision_Test_4,
+  precision_Test_5,
+  precision_Test_6,
+  precision_Test_7,
+  precision_Test_8
 )
 
 recall = c(
   recall_Test_1,
   recall_Test_2,
   recall_Test_3,
-  recall_Test_4
+  recall_Test_4,
+  recall_Test_5,
+  recall_Test_6,
+  recall_Test_7,
+  recall_Test_8
 )
 
 resumen = data.frame(modelo, accuracy, precision, recall)
