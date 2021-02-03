@@ -387,7 +387,9 @@ rm(resultsRF_Test_1)
 # -------------------------------- Fin Hip 1 ----------------------------------
 
 # --------------------------------- Hip 2 -------------------------------------
-modeloRF2 <- randomForest(Response ~ ., data=train, importance = F, type = "class")
+modeloRF2 <- randomForest(Response ~ Age + Gender + Previously_Insured +
+                            Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
+                          data=train, importance = F, type = "class")
 modeloRF2
 
 predictionRF_Test_2 <- predict(modeloRF2, newdata = test, type = "class")
@@ -419,12 +421,27 @@ rm(resultsRF_Test_2)
 # -----------------------------------------------------------------------------
 
 # --------------------------------- Hip 1 -------------------------------------
+modeloLR = glm(Response ~ ., data = train, family = binomial)
+
+#Predicciones
+predictionLR_Test_1 <-  predict(modeloLR, newdata=test, "response")
+predictionLR_Test_1 = as.data.frame(predictionLR_Test_1)
+predictionLR_Test_1$respuesta = ifelse(predictionLR_Test_1 > 0.5,"SI","NO")
+resultsLR_Test_1<-table(test$Response, predictionLR_Test_1$respuesta)
+resultsLR_Test_1
+prop.table(resultsLR_Test_1)
 
 # Acurracy
+accuracyLR_Test_7<-sum(diag(resultsLR_Test_1))/sum(resultsLR_Test_1)
+accuracyLR_Test_7
 
 # Recall
+recall_Test_7<-(resultsLR_Test_1[2,2]/(resultsLR_Test_1[2,1]+resultsLR_Test_1[2,2]))
+recall_Test_7
 
 # Precision
+precision_Test_7<-(resultsLR_Test_1[2,2]/(resultsLR_Test_1[1,2]+resultsLR_Test_1[2,2]))
+precision_Test_7
 
 # Clean Memory
 rm(modeloLR)
@@ -433,12 +450,29 @@ rm(resultsLR_Test_1)
 # -------------------------------- Fin Hip 1 ----------------------------------
 
 # --------------------------------- Hip 2 -------------------------------------
+modeloLR2 = glm(Response ~ Age + Gender + Previously_Insured +
+                  Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
+                data = train, family = binomial)
+
+#Predicciones
+predictionLR_Test_2 <-  predict(modeloLR2, newdata=test, "response")
+predictionLR_Test_2 = as.data.frame(predictionLR_Test_2)
+predictionLR_Test_2$respuesta = ifelse(predictionLR_Test_2 > 0.5,"SI","NO")
+resultsLR_Test_2<-table(test$Response, predictionLR_Test_2$respuesta)
+resultsLR_Test_2
+prop.table(resultsLR_Test_2)
 
 # Acurracy
+accuracyLR_Test_8<-sum(diag(resultsLR_Test_2))/sum(resultsLR_Test_2)
+accuracyLR_Test_8
 
 # Recall
+recall_Test_8<-(resultsLR_Test_2[2,2]/(resultsLR_Test_2[2,1]+resultsLR_Test_2[2,2]))
+recall_Test_8
 
 # Precision
+precision_Test_8<-(resultsLR_Test_2[2,2]/(resultsLR_Test_2[1,2]+resultsLR_Test_2[2,2]))
+precision_Test_8
 
 # Clean Memory
 rm(modeloLR2)
