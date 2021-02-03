@@ -25,7 +25,9 @@ library(pROC)
 
 library(randomForest)
 
-# Set de data
+# -----------------------------------------------------------------------------
+# |                              Cargar data                                  |
+# -----------------------------------------------------------------------------
 trainInsure <- read_csv("Data/train.csv", col_types = cols(id = col_number(), 
                                                    Age = col_number(), 
                                                    Driving_License = col_number(), 
@@ -37,7 +39,10 @@ trainInsure <- read_csv("Data/train.csv", col_types = cols(id = col_number(),
                                                    Response = col_number()
                                                    )
                  )
-# Ver informacion
+
+# -----------------------------------------------------------------------------
+# |                            Exploracion datos                              |
+# -----------------------------------------------------------------------------
 View(trainInsure)
 
 # Explorando un par de datos
@@ -63,7 +68,9 @@ for (i in trainInsure) {
   View(trainInsure[is.na(i),])
 }
 
-#Preparando para la matrix de correlacion
+# -----------------------------------------------------------------------------
+# |                            Dummificar datos                               |
+# -----------------------------------------------------------------------------
 
 trainInsure$GenderDummy =  ifelse(trainInsure$Gender == "Male", 1 , 0)
 
@@ -82,7 +89,9 @@ trainSinCategorico = trainInsure %>% select(
   - Vehicle_Damage
 )
 
-# Matriz
+# -----------------------------------------------------------------------------
+# |                         Matriz de correlacion                             |
+# -----------------------------------------------------------------------------
 matriz_cor = cor(trainSinCategorico)
 corrplot(matriz_cor)
 
@@ -114,7 +123,9 @@ variables <- c(
   trainInsure[8]
   )
 
-# Revisamos categoricas
+# -----------------------------------------------------------------------------
+# |                                  Graficas                                 |
+# -----------------------------------------------------------------------------
 varNameCount <- 1
 varPos <- c(2,4,6,7,8)
 for (i in variables) {
@@ -149,7 +160,9 @@ trainInsure %>%
   scale_y_continuous(breaks = seq(0, 300000, 50000), 
                      limits=c(0, 300000))
 
-# Tablas de contingencia
+# -----------------------------------------------------------------------------
+# |                       Tablas de contingencias                             |
+# -----------------------------------------------------------------------------
 # Contingencia de genero
 genderTable <- table(trainInsure$Gender, trainInsure$Response)
 genderTable
@@ -206,11 +219,15 @@ colSums(ageTable)
 
 rm(ageTable)
 
-# Hipopotamo
+# -----------------------------------------------------------------------------
+# |                                  Hipotesis                                |
+# -----------------------------------------------------------------------------
 # Las variables de Age, Previoulsy Ensured, Sale Channel, Vehicle Age, Vehicle Damage
 # y Gender tienen una relacion que explica la variable Response
 
-# Generamos nuestro subset para trainInsure y test
+# -----------------------------------------------------------------------------
+# |                         Generacion Train y test                           |
+# -----------------------------------------------------------------------------
 # Filas para trainInsure y test (utilizando paquete de CARET)
 inTrain <- createDataPartition(y = trainInsure$Response, p = 0.7, list = FALSE)
 test <- trainInsure[-inTrain,]
