@@ -25,6 +25,10 @@ library(pROC)
 
 library(randomForest)
 
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+
 # -----------------------------------------------------------------------------
 # |                              Cargar data                                  |
 # -----------------------------------------------------------------------------
@@ -226,6 +230,32 @@ rm(ageTable)
 # y Gender tienen una relacion que explica la variable Response
 
 # -----------------------------------------------------------------------------
+# |                           PREGUNTAS A RESONDER PARA LA HIPOTESIS                               |
+# -----------------------------------------------------------------------------
+
+trainInsure %>% 
+  ggplot() +
+  aes(x = as.factor(Response), y = Age, fill=Response) +
+  geom_boxplot() +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Edad x Response")
+
+
+mosaicplot(~as.factor(Response) + Previously_Insured, 
+           data = trainInsure, 
+           color = 2:7, 
+           las = 1) 
+
+mosaicplot(~as.factor(Response) + Gender, 
+           data = trainInsure, 
+           color = 2:14, 
+           las = 1) 
+
+# -----------------------------------------------------------------------------
 # |                         Generacion Train y test                           |
 # -----------------------------------------------------------------------------
 # Filas para trainInsure y test (utilizando paquete de CARET)
@@ -233,12 +263,32 @@ inTrain <- createDataPartition(y = trainInsure$Response, p = 0.7, list = FALSE)
 test <- trainInsure[-inTrain,]
 train <- trainInsure[inTrain,]
 
+# Es necesario hacer una particion especial para RF, LR y DT
+# Primero sacamos un DF de solo positivas y solo negativas
+inTrainTemp1 <- trainInsure %>% filter(Response == 1)
+inTrainTemp0 <- trainInsure %>% filter(Response == 0)
+
+# reducimos la proporcion de las negativas a la misma de las positivas
+inTrainTemp0_sort = sort(sample(nrow(inTrainTemp0), nrow(inTrainTemp0)*.14))
+# Sacamos el 14% de las negativas que equivale a la misma cantidad de las positivas
+inTrainTemp0_reduced <- inTrainTemp0[inTrainTemp0_sort,]
+
+# Unimos ambos DFs
+newTrain <- rbind(inTrainTemp1, inTrainTemp0_reduced)
+
+# La proporcion de NewTrain es ~50% para Response
+table(newTrain$Response)
+
 rm(trainInsure)
 rm(inTrain)
 rm(variables)
 rm(i)
 rm(varNameCount)
 rm(varPos)
+rm(inTrainTemp1)
+rm(inTrainTemp0)
+rm(inTrainTemp0_sort)
+rm(inTrainTemp0_reduced)
 
 # -----------------------------------------------------------------------------
 # |                             Naive Bayes                                   |
@@ -310,7 +360,7 @@ rm(predNB_Test_2)
 # -----------------------------------------------------------------------------
 
 # --------------------------------- Hip 1 -------------------------------------
-modeloDT<-rpart(Response ~ ., method="class", data=train)
+modeloDT<-rpart(Response ~ ., method="class", data=newTrain)
 prp(modeloDT) #gráfica básica 
 rpart.plot(modeloDT) #Gráfica recomendada
 
@@ -330,8 +380,8 @@ recall_Test_3<-(resultsDT_Test_1[2,2]/(resultsDT_Test_1[2,1]+resultsDT_Test_1[2,
 recall_Test_3
 
 # Precision
-precision_3<-(resultsDT_Test_1[2,2]/(resultsDT_Test_1[1,2]+resultsDT_Test_1[2,2]))
-precision_3
+precision_Test_3<-(resultsDT_Test_1[2,2]/(resultsDT_Test_1[1,2]+resultsDT_Test_1[2,2]))
+precision_Test_3
 
 # Clean Memory
 rm(modeloDT)
@@ -342,7 +392,7 @@ rm(resultsDT_Test_1)
 # --------------------------------- Hip 2 -------------------------------------
 modeloDT2<-rpart(Response ~ Age + Gender + Previously_Insured +
                   Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
-                method="class", data=train)
+                method="class", data=newTrain)
 prp(modeloDT2) #gráfica básica 
 rpart.plot(modeloDT2) #Gráfica recomendada
 
@@ -362,8 +412,8 @@ recall_Test_4<-(resultsDT_Test_2[2,2]/(resultsDT_Test_2[2,1]+resultsDT_Test_2[2,
 recall_Test_4
 
 # Precision
-precision_4<-(resultsDT_Test_2[2,2]/(resultsDT_Test_2[1,2]+resultsDT_Test_2[2,2]))
-precision_4
+precision_Test_4<-(resultsDT_Test_2[2,2]/(resultsDT_Test_2[1,2]+resultsDT_Test_2[2,2]))
+precision_Test_4
 
 # Clean Memory
 rm(modeloDT2)
@@ -376,7 +426,7 @@ rm(resultsDT_Test_2)
 # -----------------------------------------------------------------------------
 
 # --------------------------------- Hip 1 -------------------------------------
-modeloRF <- randomForest(Response ~ ., data=train, importance = F, type = "class")
+modeloRF <- randomForest(Response ~ ., data=newTrain, importance = F, type = "class")
 modeloRF
 
 predictionRF_Test_1 <- predict(modeloRF, newdata = test, type = "class")
@@ -406,7 +456,7 @@ rm(resultsRF_Test_1)
 # --------------------------------- Hip 2 -------------------------------------
 modeloRF2 <- randomForest(Response ~ Age + Gender + Previously_Insured +
                             Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
-                          data=train, importance = F, type = "class")
+                          data=newTrain, importance = F, type = "class")
 modeloRF2
 
 predictionRF_Test_2 <- predict(modeloRF2, newdata = test, type = "class")
@@ -438,7 +488,7 @@ rm(resultsRF_Test_2)
 # -----------------------------------------------------------------------------
 
 # --------------------------------- Hip 1 -------------------------------------
-modeloLR = glm(Response ~ ., data = train, family = binomial)
+modeloLR = glm(Response ~ ., data = newTrain, family = binomial)
 
 #Predicciones
 predictionLR_Test_1 <-  predict(modeloLR, newdata=test, "response")
@@ -469,7 +519,7 @@ rm(resultsLR_Test_1)
 # --------------------------------- Hip 2 -------------------------------------
 modeloLR2 = glm(Response ~ Age + Gender + Previously_Insured +
                   Vehicle_Age + Vehicle_Damage + Policy_Sales_Channel, 
-                data = train, family = binomial)
+                data = newTrain, family = binomial)
 
 #Predicciones
 predictionLR_Test_2 <-  predict(modeloLR2, newdata=test, "response")
